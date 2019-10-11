@@ -1,0 +1,13 @@
+--- # Install CAserver
+- hosts: localhost
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  connection: ssh
+  gather_facts: yes
+  tasks:
+    - name: Installing Git
+      apt:
+        name: git
+        state: latest
+
