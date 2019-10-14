@@ -1,4 +1,4 @@
---- # Install CAserver
+--- # Install CAserveron openpki
 - hosts: localhost
   remote_user: ansible
   become: yes
@@ -10,8 +10,62 @@
       apt:
         name: git
         state: latest
+
     - name: Add an Apt signing key for openpki, uses whichever key is at the URL
       apt_key:
         url: https://packages.openxpki.org/v2/debian/Release.key
         validate_certs: False
         state: present
+
+    - name: add openpki apt repository
+      apt_repository: 
+        repo: deb http://packages.openxpki.org/v2/debian/ jessie release
+        state: present 
+        filename: /etc/apt/sources.list.d/openxpki
+        validate_certs: False
+        update_cache: yes
+
+    - name: Update and upgrade apt packages
+      apt:
+        upgrade: yes
+        update_cache: yes
+        cache_valid_time: 86400 #One day
+
+    - name: Install apache
+      apt:
+        name: 
+          - apache2
+          - libapache2-mod-fcgid
+        state: latest
+
+    - name: start fcgid
+      apache2_module:
+        state: present
+        name: fcgid
+
+    - name: Install packages mysql
+      apt:
+        name: 
+          - mysql-server 
+          - libdbd-mysql-perl
+        install_recommends: yes
+        state: build-dep
+        update_cache: yes
+
+    - name: Install perl
+      apt:
+        name: 
+          - libconnector-perl
+          - libcrypt-openssl-aes-perl
+          - libcryptx-perl
+          - libopenxpki-perl
+          - libossp-uuid-perl
+          - libsoap-lite-perl
+          - libxmlrpc-lite-perl
+        state: latest
+        update_cache: yes
+
+    - name: Install openpki packages
+      shell: aptitude install -y libopenxpki-perl openxpki-cgi-session-driver openxpki-i18n
+      args:
+        executable: /bin/bash
